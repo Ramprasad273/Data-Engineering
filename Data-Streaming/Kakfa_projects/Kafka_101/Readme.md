@@ -9,7 +9,7 @@ We are also going to explore the different configurations which are important wh
 **kafka_consumer.py:**
 * AN application which consumes the message from kafka topics.
 
-**kafka_configy:**
+**kafka_configurations.py:**
 * A file which contains all the required configurations to contact Kafka brokers.
  
  
