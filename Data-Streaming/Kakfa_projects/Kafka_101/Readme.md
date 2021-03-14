@@ -1,4 +1,4 @@
-#Kafka_101
+# Kafka_101
 
 In this project we are going to see the architecture and components of Kafka server in detail.
 We are also going to explore the different configurations which are important while working with Kafka.
