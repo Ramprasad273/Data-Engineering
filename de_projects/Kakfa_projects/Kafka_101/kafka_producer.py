@@ -12,27 +12,32 @@ from kafka_configurations import get_producer_config
 
 
 # Publish json messages
-def publish_message(producer,topic,message):
+def publish_message(producer, topic, message):
     """
-    This function will publish message to the topic which is received as a parameter
-    :param producer: producer object to publish the message to Kafka servers
-    :param topic: The topic to which the message will be published
-    :param message: The event message
-    :return: None
+    Publishes a message to a specified Kafka topic.
+
+    Args:
+        producer (KafkaProducer): The Kafka producer instance to use for sending the message.
+        topic (str): The name of the topic to publish the message to.
+        message (dict): The message to be published (will be JSON serialized).
     """
     logging.info("Publish json messages to  ", str(topic))
     producer.send(topic, message)
 
 
 # Publish json messages with key
-def publish_message_with_key(producer,topic,key,message):
+def publish_message_with_key(producer, topic, key, message):
     """
+    Publishes a message with a key to a specified Kafka topic.
 
-    :param producer: producer object to publish the message to Kafka servers
-    :param topic: The topic to which the message will be published
-    :param key: The key to enable hashed partitioning
-    :param message: The event message
-    :return: None
+    The key is used by Kafka for partitioning, ensuring that messages with the same key
+    are sent to the same partition.
+
+    Args:
+        producer (KafkaProducer): The Kafka producer instance.
+        topic (str): The name of the topic to publish to.
+        key (bytes): The key for message partitioning.
+        message (dict): The message to be published (will be JSON serialized).
     """
     logging.info("Publish json messages with key to ", str(topic))
     producer.send(topic, key=key, value=message)
@@ -46,14 +51,14 @@ if __name__ == '__main__':
     # Create the producer object with basic configurations
     producer = get_producer_config()
     logging.info("Producer metrics", producer.metrics())
-    event = {"App":"Producer 1"}
+    event = {"App": "Producer 1"}
     event_1 = {"App": "Producer 2"}
 
-    #Publish message to a topic
-    publish_message(get_producer_config(),"topic1",event)
+    # Publish message to a topic
+    publish_message(producer, "topic1", event)
 
-    #Publish message to a topic with key to enable hashed partitioning
-    publish_message_with_key(get_producer_config(),"topic1",b"client1",event_1)
+    # Publish message to a topic with key to enable hashed partitioning
+    publish_message_with_key(producer, "topic1", b"client1", event_1)
 
     # block until all async messages are sent
     producer.flush()

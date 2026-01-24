@@ -6,9 +6,13 @@ import json
 
 def consumer_with_auto_commit(topic):
     """
+    Consumes messages from a specified Kafka topic and prints them to the console.
 
-    :param topic: Topic to consume message from
-    :return:
+    This function creates a Kafka consumer that automatically commits offsets.
+    It then listens for messages on the given topic and prints their content.
+
+    Args:
+        topic (str): The name of the Kafka topic to consume messages from.
     """
     #Create consumer object which consumes any message from the topic
 
@@ -17,6 +21,14 @@ def consumer_with_auto_commit(topic):
 
 
 def print_messages(events):
+    """
+    Iterates through a collection of Kafka messages and prints their details.
+
+    For each message, it prints the topic, partition, offset, key, and value.
+
+    Args:
+        events (KafkaConsumer): A KafkaConsumer instance containing the messages to be printed.
+    """
     # Iterate through the messages
     for message in events:
         # message value and key are raw bytes -- decode if necessary!
