@@ -117,3 +117,6 @@ dmypy.json
 .idea/
 .vscode/
 *.iml
+
+# Airflow logs
+de_projects/de_sandbox/docker/airflow/logs/

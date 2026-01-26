@@ -1,0 +1,27 @@
+{
+  "expectation_suite_name": "raw_customers_suite",
+  "ge_cloud_id": null,
+  "expectations": [
+    {
+      "kwargs": {
+        "column": "id",
+        "min_value": 1,
+        "max_value": 5
+      },
+      "expectation_type": "expect_column_values_to_be_between",
+      "meta": {}
+    },
+    {
+      "kwargs": {
+        "column": "email",
+        "mostly": 1.0
+      },
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "meta": {}
+    }
+  ],
+  "data_asset_type": null,
+  "meta": {
+    "great_expectations_version": "0.15.15"
+  }
+}
