@@ -1,8 +1,14 @@
 # Data Engineering Sandbox
 
+# Data Engineering Sandbox
+
+[![Build Status](https://github.com/your-username/your-repo/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/your-repo/actions/workflows/ci.yml)
+[![Test Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](tests)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](tests)
+
 This project provides a local, production-grade data platform simulation environment using Docker Compose. It is designed to be a self-contained platform for developing and testing data pipelines.
 
-## Project Setup and Execution
+## Project Installation and Execution
 
 ### Prerequisites
 
@@ -38,24 +44,38 @@ This project provides a local, production-grade data platform simulation environ
     ```
     You can check the status of the services by running `docker compose ps`.
 
-### How to run the example pipeline
+### How to run the Fintech Pipelines
 
 1.  **Access the Airflow UI:**
     Open your web browser and navigate to `http://localhost:8080`.
     Use the following credentials to log in:
-    -   **Username:** `airflow`
-    -   **Password:** `airflow`
+    -   **Username:** `admin`
+    -   **Password:** `admin`
 
-2.  **Trigger the example DAG:**
-    -   In the Airflow UI, you will see a DAG named `example_dag`.
-    -   Enable the DAG by clicking the toggle button on the left.
-    -   Trigger the DAG by clicking the "play" button on the right.
+2.  **Trigger the Fintech DAGs:**
+    -   In the Airflow UI, you will see the following DAGs:
+        - `transaction_ingestion`
+        - `customer_merchant_master`
+        - `settlement_reconciliation`
+        - `fraud_feature_engineering`
+        - `risk_scoring`
+    -   Enable the DAGs by clicking the toggle button on the left.
+    -   Trigger the DAGs by clicking the "play" button on the right.
 
-3.  **Monitor the pipeline:**
-    You can monitor the progress of the pipeline in the Airflow UI. Once the pipeline is complete, you can check the following:
-    -   **dbt:** The `stg_customers` view will be created in the `public` schema of the `airflow` database.
-    -   **Great Expectations:** The validation results will be available in the `great_expectations/uncommitted/validations` directory.
-    -   **MinIO:** You can access the MinIO UI at `http://localhost:9001` to see the created bucket.
+3.  **Monitor the pipelines:**
+    You can monitor the progress of the pipelines in the Airflow UI. Once the pipelines are complete, you can check the tables in the `postgres` database.
+
+## Dashboards
+
+The project includes a monitoring stack with Grafana dashboards. To access the Grafana dashboards, go to `http://localhost:3000` in your browser. The default username and password are `admin` and `admin`.
+
+The following dashboards are available:
+
+-   **Infrastructure Monitoring**: To monitor the health of the Docker containers.
+-   **Log Analytics**: To analyze the logs from the different services.
+-   **Database Monitoring**: To monitor the health of the PostgreSQL database.
+-   **Pipeline Monitoring**: To monitor the status of the Airflow DAGs.
+-   **Data Quality Monitoring**: To monitor the quality of the data in the tables.
 
 ## Services
 

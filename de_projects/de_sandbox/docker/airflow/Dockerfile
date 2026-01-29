@@ -14,6 +14,7 @@ USER airflow
 # Install Python packages
 RUN pip install --no-cache-dir \
     apache-airflow-providers-postgres \
+    apache-airflow-providers-apache-spark \
     dbt-postgres \
     dbt-duckdb \
     great-expectations \

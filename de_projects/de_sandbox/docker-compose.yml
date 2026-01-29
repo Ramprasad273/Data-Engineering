@@ -8,6 +8,7 @@ x-airflow-common: &airflow-common
     # --- AIRFLOW 3 REQUIRED ---
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth
+    AIRFLOW_CONN_SPARK_DEFAULT: "spark://spark-master:7077"
   volumes:
     - ./docker/airflow/dags:/opt/airflow/dags
     - ./docker/airflow/logs:/opt/airflow/logs
@@ -15,16 +16,43 @@ x-airflow-common: &airflow-common
     - ./dbt:/opt/dbt
     - ./great_expectations:/opt/great_expectations
     - ./scripts:/opt/scripts
+    - ./docker/spark/jobs:/opt/spark/jobs
+    - ./data:/opt/spark/data
   depends_on:
-    postgres:
-      condition: service_healthy
-    minio:
-      condition: service_healthy
-
-  
-  
+    - spark-master
+    - postgres
+    - minio
 
 services:
+  spark-master:
+    image: apache/spark:3.5.0
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - "8081:8080" # Spark Master Web UI
+      - "7077:7077" # Spark Master communication
+    environment:
+      - SPARK_MASTER_WEBUI_PORT=8080
+      - SPARK_MASTER_PORT=7077
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_HOME=/opt/spark
+    entrypoint: ""
+    command: "/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master"
+
+  spark-worker:
+    image: apache/spark:3.5.0
+    container_name: spark-worker
+    hostname: spark-worker
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1g
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_HOME=/opt/spark
+    entrypoint: ""
+    command: "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077"
   postgres:
     image: postgres:13
     container_name: postgres
@@ -34,6 +62,7 @@ services:
     env_file: .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -109,6 +138,16 @@ services:
       retries: 5
     restart: always
 
+  postgres_exporter:
+    image: wrouesnel/postgres_exporter
+    container_name: postgres_exporter
+    restart: always
+    environment:
+      DATA_SOURCE_NAME: "postgresql://user:password@postgres:5432/postgres?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
   prometheus:
     image: prom/prometheus:v2.37.0
     container_name: prometheus

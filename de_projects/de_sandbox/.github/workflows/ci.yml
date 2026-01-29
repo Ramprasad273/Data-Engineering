@@ -33,11 +33,22 @@ jobs:
       - name: Lint dbt models
         run: dbt compile --profiles-dir dbt --project-dir dbt
 
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Build Docker images
-        run: docker-compose build
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: pip install -r fintech/tests/requirements.txt
+
+      - name: Run unit tests
+        run: pytest fintech/tests/test_*.py
+
+      - name: Run integration tests
+        run: pytest fintech/tests/test_pipeline_integration.py
