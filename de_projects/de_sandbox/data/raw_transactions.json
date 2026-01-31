@@ -1,6 +1,0 @@
-
-[
-    {"transaction_id": "1", "transaction_time": "2023-01-01 12:00:00", "customer_id": "c1", "merchant_id": "m1", "transaction_amount": 100.0, "payment_method": "card", "device_id": "d1", "ip_address": "1.1.1.1", "geo_latitude": 1.1, "geo_longitude": 1.1, "is_successful": true},
-    {"transaction_id": "2", "transaction_time": "2023-01-01 12:01:00", "customer_id": "c2", "merchant_id": "m2", "transaction_amount": 200.0, "payment_method": "upi", "device_id": "d2", "ip_address": "2.2.2.2", "geo_latitude": 2.2, "geo_longitude": 2.2, "is_successful": true},
-    {"transaction_id": "3", "transaction_time": "2023-01-01 12:02:00", "customer_id": "c1", "merchant_id": "m1", "transaction_amount": 100.0, "payment_method": "card", "device_id": "d1", "ip_address": "1.1.1.1", "geo_latitude": 1.1, "geo_longitude": 1.1, "is_successful": true}
-]
