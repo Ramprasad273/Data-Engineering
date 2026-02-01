@@ -13,37 +13,16 @@ The key goals of this project are:
 
 The environment is orchestrated using `docker-compose` and consists of the following services:
 
-```
-+--------------------------+      +-------------------------+
-|      Airflow Services    |      |      Spark Cluster      |
-|                          |      |                         |
-|  +-------------------+   |      |  +------------------+   |
-|  |  Webserver (UI)   |   |      |  |   Spark Master   |   |
-|  +-------------------+   |      |  +------------------+   |
-|                          |      |                         |
-|  +-------------------+   |      |  +------------------+   |
-|  |    Scheduler      |   |      |  |   Spark Worker   |   |
-|  +-------------------+   |      |  +------------------+   |
-|                          |      +-----------+-------------+
-|  +-------------------+   |                  |
-|  |   Celery Worker   |---+------------------+ (Submit Jobs)
-|  +-------------------+   |
-|                          |
-+------------+-------------+
-             |
-+------------+-------------+
-|    Supporting Services   |
-|                          |
-|  +-------------------+   |
-|  |    PostgreSQL     |   | (Metadata DB)
-|  +-------------------+   |
-|                          |
-|  +-------------------+   |
-|  |       Redis       |   | (Celery Broker)
-|  +-------------------+   |
-|                          |
-+--------------------------+
-```
+![Airflow Sandbox Architecture](../../docs/images/airflow_sandbox_architecture.png)
+
+The architecture is organized into five layers:
+
+1. **User Access Layer**: Web browser access to all UIs
+2. **Orchestration Layer** (Blue): Airflow Webserver, Scheduler, and Worker
+3. **Processing Layer** (Orange): Spark Master and Worker
+4. **Data Layer** (Green): PostgreSQL (metadata) and Redis (message broker)
+5. **Monitoring Stack** (Red/Orange): Prometheus, Grafana, Loki, Promtail, cAdvisor
+6. **Exporters** (Gray): PostgreSQL, Redis, and StatsD exporters for metrics
 
 ### Components
 
@@ -57,6 +36,15 @@ The environment is orchestrated using `docker-compose` and consists of the follo
 -   **Supporting Services**:
     -   `postgres`: A PostgreSQL database used by Airflow to store its metadata.
     -   `redis`: A Redis instance that acts as a message broker for the CeleryExecutor.
+-   **Monitoring Stack** (Lightweight):
+    -   `prometheus`: Metrics collection and storage at `http://localhost:9090`.
+    -   `grafana`: Visualization dashboards at `http://localhost:3000` (admin/admin).
+    -   `loki`: Log aggregation service at `http://localhost:3100`.
+    -   `promtail`: Log shipping agent (collects logs from all containers).
+    -   `cadvisor`: Container metrics at `http://localhost:8082`.
+    -   `postgres-exporter`: PostgreSQL metrics exporter.
+    -   `redis-exporter`: Redis metrics exporter.
+    -   `statsd-exporter`: Airflow StatsD metrics exporter.
 
 ## How to Run
 
@@ -75,10 +63,25 @@ docker-compose up -d
 
 ### 2. Access the Services
 
+> [!NOTE]
+> **Default Credentials for Development**
+> 
+> This sandbox uses default credentials for ease of local development. For production deployments, see the [Security Guide](../../SECURITY.md).
+
 -   **Airflow UI**: Open your web browser and navigate to `http://localhost:8080`.
     -   **Username**: `admin`
-    -   **Password**: `admin`
+    -   **Password**: See `docker-compose.yaml` or use `.env` file
 -   **Spark Master UI**: Open your web browser and navigate to `http://localhost:8081`.
+-   **Grafana (Monitoring Dashboards)**: Navigate to `http://localhost:3000`.
+    -   **Username**: `admin`
+    -   **Password**: See `docker-compose.yaml` or use `.env` file
+-   **Prometheus (Metrics)**: Navigate to `http://localhost:9090`.
+-   **cAdvisor (Container Metrics)**: Navigate to `http://localhost:8082`.
+
+**To change default passwords:**
+1. Copy `.env.example` to `.env`
+2. Update passwords in `.env` file
+3. Run `docker-compose --env-file .env up -d`
 
 ### 3. Running the Example DAG
 
@@ -105,6 +108,81 @@ To stop the services and remove all volumes (this will delete the Airflow metada
 ```bash
 docker-compose down -v
 ```
+
+## Monitoring & Observability
+
+The environment includes a **lightweight monitoring stack** designed for fast startup (<60s) and minimal resource usage (<2GB RAM, <5GB disk).
+
+### Available Dashboards
+
+Access Grafana at `http://localhost:3000` (admin/admin) to view:
+
+1. **Infrastructure Overview**
+   - Real-time service status (UP/DOWN)
+   - Container CPU and memory usage
+   - System-wide resource consumption
+
+2. **Airflow Monitoring** (via StatsD metrics)
+   - DAG run statistics
+   - Task execution metrics
+   - Scheduler performance
+   - Worker resource usage
+
+3. **Spark Cluster Monitoring**
+   - Master and worker status
+   - Job execution metrics
+   - Resource allocation
+
+4. **Database & Cache**
+   - PostgreSQL connection pool, queries/sec
+   - Redis memory usage, hit/miss ratio
+
+### Metrics Collection
+
+**Prometheus** (`http://localhost:9090`) collects metrics from:
+- All Docker containers (via cAdvisor)
+- PostgreSQL database (via postgres-exporter)
+- Redis cache (via redis-exporter)
+- Airflow services (via statsd-exporter)
+
+**Retention**: 15 days
+
+### Log Aggregation
+
+**Loki** (`http://localhost:3100`) aggregates logs from all containers via Promtail.
+
+**Query logs in Grafana**:
+1. Go to Explore
+2. Select "Loki" data source
+3. Use LogQL queries, e.g., `{service="airflow-worker"}`
+
+**Retention**: 7 days
+
+### Alerting
+
+Prometheus monitors critical metrics and triggers alerts for:
+- Service down (any container stops)
+- High CPU usage (>85% for 5 minutes)
+- High memory usage (>85% for 5 minutes)
+- Database connection issues
+- Cache unavailability
+
+View active alerts in Prometheus at `http://localhost:9090/alerts`.
+
+### Resource Usage
+
+The monitoring stack adds approximately:
+- **RAM**: 1.5-2GB
+- **Disk**: 3-5GB (with 7-15 day retention)
+- **Startup time**: 30-60 seconds
+- **Containers**: +8
+
+### Customization
+
+- **Prometheus config**: `config/prometheus/prometheus.yml`
+- **Alert rules**: `config/prometheus/alerts.yml`
+- **Loki config**: `config/loki/loki-config.yml`
+- **Grafana dashboards**: `config/grafana/dashboards/`
 
 ## Common Issues and Fixes
 

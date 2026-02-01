@@ -16,6 +16,13 @@ x-airflow-common: &airflow-common
 
     AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    
+    # StatsD metrics for monitoring
+    AIRFLOW__METRICS__STATSD_ON: "true"
+    AIRFLOW__METRICS__STATSD_HOST: "statsd-exporter"
+    AIRFLOW__METRICS__STATSD_PORT: "9125"
+    AIRFLOW__METRICS__STATSD_PREFIX: "airflow"
+    
     SPARK_HOME: /opt/spark
     PATH: /home/airflow/.local/bin:/opt/spark/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     _AIRFLOW_WWW_USER_USERNAME: admin
@@ -181,9 +188,176 @@ services:
 
     restart: always
 
+  # ==================== MONITORING STACK ====================
+  
+  # -------------------- PROMETHEUS --------------------
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    hostname: prometheus
+    networks:
+      - airflow-spark
+    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    
+    ports:
+      - "9090:9090"
+    
+    restart: unless-stopped
+
+  # -------------------- GRAFANA --------------------
+  grafana:
+    image: grafana/grafana:10.0.3
+    container_name: grafana
+    hostname: grafana
+    networks:
+      - airflow-spark
+    
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=
+    
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/etc/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    
+    ports:
+      - "3000:3000"
+    
+    depends_on:
+      - prometheus
+      - loki
+    
+    restart: unless-stopped
+
+  # -------------------- LOKI --------------------
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    hostname: loki
+    networks:
+      - airflow-spark
+    
+    command: -config.file=/etc/loki/loki-config.yml
+    
+    volumes:
+      - ./config/loki:/etc/loki
+      - loki-data:/loki
+    
+    ports:
+      - "3100:3100"
+    
+    restart: unless-stopped
+
+  # -------------------- PROMTAIL --------------------
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    hostname: promtail
+    networks:
+      - airflow-spark
+    
+    command: -config.file=/etc/promtail/promtail-config.yml
+    
+    volumes:
+      - ./config/promtail:/etc/promtail
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    
+    depends_on:
+      - loki
+    
+    restart: unless-stopped
+
+  # -------------------- CADVISOR --------------------
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: cadvisor
+    hostname: cadvisor
+    networks:
+      - airflow-spark
+    
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    
+    ports:
+      - "8082:8080"
+    
+    restart: unless-stopped
+    
+    privileged: true
+
+  # -------------------- POSTGRES EXPORTER --------------------
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.13.2
+    container_name: postgres_exporter
+    networks:
+      - airflow-spark
+    
+    environment:
+      DATA_SOURCE_NAME: "postgresql://airflow:airflow@postgres:5432/airflow?sslmode=disable"
+    
+    ports:
+      - "9187:9187"
+    
+    depends_on:
+      - postgres
+    
+    restart: unless-stopped
+
+  # -------------------- REDIS EXPORTER --------------------
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.52.0-alpine
+    container_name: redis_exporter
+    networks:
+      - airflow-spark
+    
+    environment:
+      REDIS_ADDR: "redis:6379"
+    
+    ports:
+      - "9121:9121"
+    
+    depends_on:
+      - redis
+    
+    restart: unless-stopped
+
+  # -------------------- STATSD EXPORTER --------------------
+  statsd-exporter:
+    image: prom/statsd-exporter:v0.26.0
+    container_name: statsd_exporter
+    networks:
+      - airflow-spark
+    
+    ports:
+      - "9102:9102"
+      - "9125:9125/udp"
+    
+    restart: unless-stopped
+
 networks:
   airflow-spark:
     driver: bridge
 
 volumes:
   postgres-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
