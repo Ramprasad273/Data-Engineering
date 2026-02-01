@@ -1,0 +1,189 @@
+version: "3.9"
+
+x-airflow-common: &airflow-common
+  build: .
+  restart: always
+
+  environment:
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+
+    AIRFLOW_CONN_SPARK_DEFAULT: spark://spark-master:7077
+    AIRFLOW_CONN_SPARK_URI: spark://spark-master:7077
+
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+
+    AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    SPARK_HOME: /opt/spark
+    PATH: /home/airflow/.local/bin:/opt/spark/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    _AIRFLOW_WWW_USER_USERNAME: admin
+    _AIRFLOW_WWW_USER_PASSWORD: admin
+    _AIRFLOW_WWW_USER_EMAIL: admin@example.com
+    _AIRFLOW_WWW_USER_FIRSTNAME: Admin
+    _AIRFLOW_WWW_USER_LASTNAME: User
+    _AIRFLOW_WWW_USER_ROLE: Admin
+
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    - ./config:/opt/airflow/config
+    - ./spark:/opt/spark-jobs
+    - /var/run/docker.sock:/var/run/docker.sock
+
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  # -------------------- DB --------------------
+  postgres:
+    image: postgres:15
+    container_name: airflow_postgres
+    networks:
+      - airflow-spark
+
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+    
+    ports:
+      - "5432:5432"
+
+    restart: always
+
+  # -------------------- Redis --------------------
+  redis:
+    image: redis:7
+    container_name: airflow_redis
+    networks:
+      - airflow-spark
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+
+    restart: always
+
+  # -------------------- INIT --------------------
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow_init
+    networks:
+      - airflow-spark
+
+    entrypoint: /bin/bash
+
+    command: -c "until airflow db check; do sleep 5; done; airflow db migrate; airflow users create -u admin -p admin -f Admin -l User -r Admin -e admin@example.com || true"
+
+    restart: "no"
+
+  # -------------------- WEBSERVER --------------------
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow_webserver
+
+    command: webserver
+
+    ports:
+      - "8080:8080"
+
+    networks:
+      - airflow-spark
+
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    
+    restart: always
+    depends_on:
+            - postgres
+
+  # -------------------- SCHEDULER --------------------
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow_scheduler
+    networks:
+      - airflow-spark
+
+    command: scheduler
+
+  # -------------------- WORKER --------------------
+  airflow-worker:
+    <<: *airflow-common
+    container_name: airflow_worker
+    networks:
+      - airflow-spark
+
+    command: celery worker
+
+    # -------------------- SPARK MASTER --------------------
+  spark-master:
+    image: apache/spark:3.5.0
+    container_name: spark_master
+    hostname: spark-master
+    networks:
+      - airflow-spark
+
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+
+    ports:
+      - "7077:7077"
+      - "8081:8080"
+
+    restart: always
+
+  # -------------------- SPARK WORKER --------------------
+  spark-worker:
+    image: apache/spark:3.5.0
+    container_name: spark_worker
+    networks:
+      - airflow-spark
+
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+
+    depends_on:
+      - spark-master
+
+    restart: always
+
+networks:
+  airflow-spark:
+    driver: bridge
+
+volumes:
+  postgres-data:

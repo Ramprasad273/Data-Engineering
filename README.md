@@ -1,65 +1,29 @@
 # Data Engineering Projects
 
-This repository contains a collection of sample data engineering projects.
+This repository is a collection of hands-on data engineering projects, each designed to demonstrate different technologies and concepts in the field.
 
-## 1. Data Streaming 101
+## Projects
 
-This section focuses on projects related to data streaming technologies.
+### 1. Airflow Sandbox with Spark
 
-### i. Kafka Projects
+This project provides a Dockerized environment for running data pipelines with Apache Airflow and Apache Spark. It's a great starting point for developing and testing ETL/ELT workflows.
 
-These projects demonstrate the use of Apache Kafka with Python.
+-   **Technologies**: Docker, Docker Compose, Apache Airflow, Apache Spark, PostgreSQL, Redis.
+-   **Location**: `de_projects/airflow_sandbox`
+-   **[>> Go to the Airflow Sandbox Project README for full details](./de_projects/airflow_sandbox/README.md)**
 
-#### Kafka 101
+### 2. Kafka 101: Producer and Consumer
 
-This project provides a basic example of a Kafka producer and consumer implementation in Python.
+A fundamental introduction to Apache Kafka, this project demonstrates a simple producer-consumer setup using Python.
 
-**Project Structure:**
-
--   `kafka_producer.py`: A Python script to send messages to a Kafka topic.
--   `kafka_consumer.py`: A Python script to consume messages from a Kafka topic.
--   `kafka_configurations.py`: Contains configuration settings for the Kafka producer and consumer.
-
-**Code Improvements:**
-
-*   **Improved Documentation:** Added detailed docstrings to all functions to improve code readability and maintainability.
-*   **`.gitignore`:** Included a comprehensive `.gitignore` file to exclude unnecessary files from version control.
-*   **Producer Optimization:** The producer script has been refactored to use a single producer instance for better performance.
+-   **Technologies**: Python, Apache Kafka.
+-   **Location**: `de_projects/Kakfa_projects/Kafka_101`
+-   **[>> Go to the Kafka 101 Project README for full details](./de_projects/Kakfa_projects/Kafka_101/Readme.md)**
 
 ## Getting Started
 
-### Prerequisites
+To get started with any of the projects, please refer to the detailed `README.md` file located in each project's directory. The prerequisites and setup instructions are specific to each project.
 
-*   Python 3.x
-*   Apache Kafka
-*   `kafka-python` library
+## Contributing
 
-### Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    ```
-2.  **Install the required Python library:**
-    ```bash
-    pip install kafka-python
-    ```
-3.  **Start your Kafka server.** Make sure the server is running on `localhost:9092`.
-
-## Usage
-
-### Running the Kafka Producer
-
-To send messages to the `topic1` topic, run the following command:
-
-```bash
-python de_projects/Kakfa_projects/Kafka_101/kafka_producer.py
-```
-
-### Running the Kafka Consumer
-
-To consume messages from the `topic1` topic, run the following command:
-
-```bash
-python de_projects/Kakfa_projects/Kafka_101/kafka_consumer.py
-```
+Contributions are welcome! If you have a data engineering project or an improvement you'd like to share, please feel free to create a pull request.
