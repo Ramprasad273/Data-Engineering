@@ -1,0 +1,268 @@
+apiVersion: 1
+
+rules:
+  - name: data_ingestion_alerts
+    folder: Data Pipelines
+    folderUid: pipelines-folder
+    rule:
+      uid: data-ingestion-alerts
+      namespace: ""
+      interval: 30s
+      condition: M_OR
+      inputs:
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: A
+            expr: increase(data_ingestion_latency_seconds[5m]) > 30
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: B
+            expr: increase(data_ingestion_errors_total[5m]) > 10
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: C
+            expr: data_ingestion_queue_size > 1000
+            hide: false
+      for: [5m]
+      noDataState: AlertKeepPrevious
+      notification:
+        receivers: [slack-alerting, email-alerting]
+
+  - name: feature_engineering_alerts
+    folder: Data Pipelines
+    folderUid: pipelines-folder
+    rule:
+      uid: feature-engineering-alerts
+      namespace: ""
+      interval: 30s
+      condition: M_OR
+      inputs:
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: A
+            expr: increase(feature_engineering_latency_seconds[5m]) > 60
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: B
+            expr: increase(feature_engineering_errors_total[5m]) > 20
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: C
+            expr: feature_engineering_records_processed_rate < 10
+            hide: false
+      for: [5m]
+      noDataState: AlertKeepPrevious
+      notification:
+        receivers: [slack-alerting, email-alerting]
+
+  - name: realtime_stream_alerts
+    folder: Data Pipelines
+    folderUid: pipelines-folder
+    rule:
+      uid: realtime-stream-alerts
+      namespace: ""
+      interval: 30s
+      condition: M_OR
+      inputs:
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: A
+            expr: realtime_stream_backlog_size > 10000
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: B
+            expr: realtime_stream_consumer_lag_seconds > 30
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: C
+            expr: increase(realtime_stream_processing_errors_total[5m]) > 100
+            hide: false
+      for: [2m]
+      noDataState: AlertKeepPrevious
+      notification:
+        receivers: [slack-alerting, email-alerting]
+
+  - name: data_warehousing_alerts
+    folder: Data Pipelines
+    folderUid: pipelines-folder
+    rule:
+      uid: data-warehousing-alerts
+      namespace: ""
+      interval: 30s
+      condition: M_OR
+      inputs:
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: A
+            expr: increase(data_warehousing_etl_failures_total[5m]) > 10
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: B
+            expr: data_warehousing_load_latency_seconds > 300
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: C
+            expr: data_warehouse_storage_used_bytes / data_warehouse_storage_total_bytes * 100 > 85
+            hide: false
+      for: [5m]
+      noDataState: AlertKeepPrevious
+      notification:
+        receivers: [slack-alerting, email-alerting]
+
+  - name: ml_training_alerts
+    folder: Data Pipelines
+    folderUid: pipelines-folder
+    rule:
+      uid: ml-training-alerts
+      namespace: ""
+      interval: 30s
+      condition: M_OR
+      inputs:
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: A
+            expr: increase(ml_loss_over_time[1h]) < 0.001
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: B
+            expr: ml_training_gpu_temperature_c > 80
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: C
+            expr: increase(ml_training_accuracy[1h]) < 0.5 or increase(ml_training_loss[1h]) > 0.5
+            hide: false
+      for: [2h]
+      noDataState: AlertKeepPrevious
+      notification:
+        receivers: [slack-alerting, email-alerting]
+
+  - name: orchestration_alerts
+    folder: Data Pipelines
+    folderUid: pipelines-folder
+    rule:
+      uid: orchestration-alerts
+      namespace: ""
+      interval: 30s
+      condition: M_OR
+      inputs:
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: A
+            expr: orchestration_pipeline_delay_seconds > 300
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: B
+            expr: orchestration_active_workers < 2
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: C
+            expr: increase(orchestration_dag_run_failures_total[5m]) > 10
+            hide: false
+      for: [5m]
+      noDataState: AlertKeepPrevious
+      notification:
+        receivers: [slack-alerting, email-alerting]
+
+  - name: spark_alerts
+    folder: Data Pipelines
+    folderUid: pipelines-folder
+    rule:
+      uid: spark-alerts
+      namespace: ""
+      interval: 30s
+      condition: M_OR
+      inputs:
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: A
+            expr: increase(spark_executor_oom_total[5m]) > 0
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: B
+            expr: increase(spark_application_failures_total[5m]) > 0
+            hide: false
+        - datasource:
+            type: prometheus
+            uid: prometheus
+          model:
+            queryType: rawQuery
+            refId: C
+            expr: spark_memory_pressure_percent > 80
+            hide: false
+      for: [2m]
+      noDataState: AlertKeepPrevious
+      notification:
+        receivers: [slack-alerting, email-alerting]

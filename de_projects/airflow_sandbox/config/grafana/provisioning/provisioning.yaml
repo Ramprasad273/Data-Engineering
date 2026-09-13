@@ -1,0 +1,66 @@
+# Grafana provisioning configuration for multi-pipeline monitoring stack
+
+---
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    version: 1
+    uid: prometheus
+    jsonData:
+      httpHeaderName1: "Authorization"
+      timeInterval: "15s"
+
+dashboards:
+  - name: ETL Pipeline Metrics
+    folder: Pipelines
+    folderUid: pipelines-folder
+    datasourceUid: prometheus
+    file: etl-pipeline-monitoring.json
+
+  - name: Ingestion Pipeline Metrics
+    folder: Pipelines
+    folderUid: pipelines-folder
+    datasourceUid: prometheus
+    file: ingestion-pipeline-monitoring.json
+
+  - name: Transformation Pipeline Metrics
+    folder: Pipelines
+    folderUid: pipelines-folder
+    datasourceUid: prometheus
+    file: transformation-pipeline-monitoring.json
+
+  - name: Quality Monitoring Dashboard
+    folder: Pipelines
+    folderUid: pipelines-folder
+    datasourceUid: prometheus
+    file: data-quality-monitoring.json
+
+  - name: Orchestration Metrics Dashboard
+    folder: Pipelines
+    folderUid: pipelines-folder
+    datasourceUid: prometheus
+    file: orchestration-metrics.json
+
+  - name: ML Training Monitoring Dashboard
+    folder: Pipelines
+    folderUid: pipelines-folder
+    datasourceUid: prometheus
+    file: ml-training-monitoring.json
+
+  - name: Feature Engineering Monitoring Dashboard
+    folder: Pipelines
+    folderUid: pipelines-folder
+    datasourceUid: prometheus
+    file: feature-engineering-monitoring.json
+
+  - name: Data Processing Metrics Dashboard
+    folder: Pipelines
+    folderUid: pipelines-folder
+    datasourceUid: prometheus
+    file: data-processing-monitoring.json

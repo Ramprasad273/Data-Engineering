@@ -1,41 +1,60 @@
 global:
-  scrape_interval: 30s
-  evaluation_interval: 30s
-  scrape_timeout: 10s
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'airflow-cluster'
+    environment: 'sandbox'
 
-# Alerting configuration
 alerting:
   alertmanagers:
     - static_configs:
         - targets: []
 
-# Load rules once and periodically evaluate them
 rule_files:
-  - "alerts.yml"
+  - '/etc/prometheus/alerts.yml'
 
-# Scrape configurations
 scrape_configs:
-  # Prometheus self-monitoring
+  # Prometheus itself
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
-  # cAdvisor - Container metrics
-  - job_name: 'cadvisor'
+  # Loki for logging metrics
+  - job_name: 'loki'
     static_configs:
-      - targets: ['cadvisor:8080']
+      - targets: ['localhost:3100']
 
-  # PostgreSQL exporter
-  - job_name: 'postgres'
+  # Node Exporter (Docker host)
+  - job_name: 'node_exporter'
     static_configs:
-      - targets: ['postgres-exporter:9187']
+      - targets: ['host.docker.internal:9100', 'airflow-web-1:9100']
 
-  # Redis exporter
-  - job_name: 'redis'
+  # Airflow scheduler metrics
+  - job_name: 'airflow_scheduler'
     static_configs:
-      - targets: ['redis-exporter:9121']
+      - targets: ['airflow-web-1:8790']
 
-  # Airflow StatsD exporter
-  - job_name: 'airflow'
+  # DAG Processor Manager for custom pipeline metrics
+  - job_name: 'dag_processor_manager'
     static_configs:
-      - targets: ['statsd-exporter:9102']
+      - targets: ['airflow-web-1:8888']
+
+  # Spark master (metrics endpoint)
+  - job_name: 'spark_master'
+    static_configs:
+      - targets: ['airflow-web-1:8080']
+
+  # Feature Engineering Service
+  - job_name: 'feature_engineering'
+    static_configs:
+      - targets: ['feature-engineering-service:8000']
+
+  # ML Training Service (GPU metrics)
+  - job_name: 'ml_training'
+    static_configs:
+      - targets: ['ml-training-service:9090']
+
+  # Orchestration Manager (Airflow custom metrics)
+  - job_name: 'orchestration'
+    static_configs:
+      - targets: ['airflow-web-1:8999']

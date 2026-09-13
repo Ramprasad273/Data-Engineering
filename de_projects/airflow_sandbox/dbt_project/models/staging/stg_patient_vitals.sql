@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+{{ config(materialized=''view'') }}
 
 SELECT
     telemetry_id,
@@ -11,4 +11,4 @@ SELECT
     spo2_pct,
     vital_status
 FROM raw.patient_vitals
-WHERE vital_status != 'entered_in_error'
+WHERE vital_status = 'confirmed'

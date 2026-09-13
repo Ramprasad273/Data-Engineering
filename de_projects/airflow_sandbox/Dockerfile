@@ -2,7 +2,7 @@ FROM apache/airflow:2.9.3-python3.11
 
 USER root
 
-# Install Java
+# Install Java for Spark
 RUN apt-get update && \
     apt-get install -y openjdk-17-jdk && \
     apt-get clean
@@ -19,5 +19,26 @@ ENV PATH="/home/airflow/.local/bin:/opt/spark/bin:${PATH}"
 
 USER airflow
 
-# Install provider in airflow venv
-RUN pip install --no-cache-dir apache-airflow-providers-apache-spark==4.7.0
+# Install Apache Airflow providers
+RUN pip install --no-cache-dir \
+    apache-airflow-providers-apache-spark==4.7.0 \
+    kafka-python \
+    dbt-core==1.7.0 \
+    dbt-postgres==1.7.0 \
+    dbt-snowflake==1.7.0 \
+    psycopg2-binary
+
+# Configure Airflow for running with dbt while app is operational
+COPY config/airflow_local_settings.py /opt/airflow/config/airflow_local_settings.py
+
+# Set permissions for DAGs folder
+RUN chmod -R 755 /opt/airflow/dags \
+    && chmod -R 755 /opt/airflow/logs \
+    && chmod -R 755 /opt/airflow/plugins \
+    && chmod -R 755 /opt/airflow/config
+
+# Install Python dependencies for dbt compatibility
+RUN pip install --no-cache-dir \
+    python-dateutil \
+    pytz \
+    pendulum

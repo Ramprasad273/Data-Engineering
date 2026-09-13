@@ -1,19 +1,55 @@
+# Grafana Data Sources Configuration for Airflow Sandbox Pipeline Monitoring
+# ===========================================================================
+
 apiVersion: 1
 
 datasources:
+  
+  # ==================== PROMETHEUS METRICS DATA SOURCE ====================
+  
   - name: Prometheus
     type: prometheus
     access: proxy
     url: http://prometheus:9090
     isDefault: true
-    editable: false
+    editable: true
     jsonData:
-      timeInterval: 30s
-
+      timeInterval: false
+      httpMethod: POST
+  
+  # ==================== LOKI LOGS DATA SOURCE ====================
+  
   - name: Loki
     type: loki
     access: proxy
     url: http://loki:3100
-    editable: false
+    editable: true
     jsonData:
       maxLines: 1000
+  
+  # ==================== MIRROR METRICS (Promtail) ====================
+  
+  - name: Mirror Metrics
+    type: prometheus
+    access: proxy
+    url: http://loki-loki-metrics-promtail:9102
+    editable: true
+
+  # ==================== POSTGRESQL CLINICAL DATA WAREHOUSE ====================
+  
+  - name: Healthcare_DWH
+    type: postgres
+    uid: healthcare_dwh_postgres
+    access: proxy
+    url: clinical-postgres:5432
+    user: clinical_admin
+    secureJsonData:
+      password: clinical_secure_password
+    jsonData:
+      database: healthcare_dwh
+      sslmode: disable
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+      postgresVersion: 1600
+    editable: true

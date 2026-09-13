@@ -1,53 +1,282 @@
 groups:
-  - name: infrastructure_alerts
-    interval: 60s
+  # =================== DATA_INGESTION Pipeline Alerts ===================
+  - name: data_ingestion_alerts
     rules:
-      # Service down alerts
-      - alert: ServiceDown
-        expr: up == 0
+      - alert: DataIngestionLatencyHigh
+        expr: increase(data_ingestion_latency_seconds[5m]) > 30
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data ingestion latency is high ({{ $value }}s)"
+          description: "Data ingestion pipeline experienced {{ printf \"%.0f\" $value }} second latency"
+
+      - alert: DataIngestionErrorRateHigh
+        expr: increase(data_ingestion_errors_total[5m]) > 10
         for: 2m
         labels:
           severity: critical
         annotations:
-          summary: "Service {{ $labels.job }} is down"
-          description: "{{ $labels.job }} has been down for more than 2 minutes"
+          summary: "Data ingestion error rate is high ({{ $value }} errors)"
+          description: "Data ingestion pipeline has {{ printf \"%.0f\" $value }} errors in last 5 minutes"
 
-      # High CPU usage
-      - alert: HighCPUUsage
-        expr: (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 85
+      - alert: DataIngestionQueueFull
+        expr: data_ingestion_queue_size > 1000
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Data ingestion queue is full ({{ $value }} items)"
+          description: "Data ingestion queue has reached maximum capacity"
+
+  # =================== FEATURE_ENGINEERING Pipeline Alerts ===================
+  - name: feature_engineering_alerts
+    rules:
+      - alert: FeatureEngineeringLatencyHigh
+        expr: increase(feature_engineering_latency_seconds[5m]) > 60
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Feature engineering latency is high ({{ $value }}s)"
+          description: "Feature engineering pipeline experienced {{ printf \"%.0f\" $value }} second latency"
+
+      - alert: FeatureEngineeringErrorRateHigh
+        expr: increase(feature_engineering_errors_total[5m]) > 20
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Feature engineering error rate is high ({{ $value }} errors)"
+          description: "Feature engineering pipeline has {{ printf \"%.0f\" $value }} errors in last 5 minutes"
+
+      - alert: FeatureEngineeringThroughputLow
+        expr: feature_engineering_records_processed_rate < 10
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High CPU usage on {{ $labels.instance }}"
-          description: "CPU usage is above 85% for 5 minutes"
+          summary: "Feature engineering throughput is low ({{ $value }} records/sec)"
+          description: "Feature engineering pipeline is processing only {{ printf \"%.0f\" $value }} records/sec"
 
-      # High memory usage
-      - alert: HighMemoryUsage
-        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 85
+      - alert: FeatureTransformationFailed
+        expr: feature_transformation_failures_total > 5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Feature transformation has failed ({{ $value }} failures)"
+          description: "Feature transformation process encountered {{ printf \"%.0f\" $value }} failures"
+
+  # =================== REALTIME_STREAM Processing Alerts ===================
+  - name: realtime_stream_alerts
+    rules:
+      - alert: RealtimeStreamBacklogHigh
+        expr: realtime_stream_backlog_size > 10000
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Realtime stream backlog is high ({{ $value }} events)"
+          description: "Realtime stream processing has {{ printf \"%.0f\" $value }} events in backlog"
+
+      - alert: RealtimeStreamConsumerLagHigh
+        expr: realtime_stream_consumer_lag_seconds > 30
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Realtime stream consumer lag is high ({{ $value }}s)"
+          description: "Realtime stream consumers are {{ printf \"%.0f\" $value }} seconds behind"
+
+      - alert: RealtimeStreamProcessingErrorRateHigh
+        expr: increase(realtime_stream_processing_errors_total[5m]) > 100
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Realtime stream processing error rate is high ({{ $value }} errors)"
+          description: "Realtime stream processor has {{ printf \"%.0f\" $value }} errors in last 5 minutes"
+
+      - alert: RealtimeStreamThroughputLow
+        expr: realtime_stream_events_processed_rate < 50
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High memory usage on {{ $labels.name }}"
-          description: "Memory usage is above 85% for 5 minutes"
+          summary: "Realtime stream throughput is low ({{ $value }} events/sec)"
+          description: "Realtime stream is processing only {{ printf \"%.0f\" $value }} events/sec"
 
-      # PostgreSQL down
-      - alert: PostgreSQLDown
-        expr: pg_up == 0
-        for: 1m
+  # =================== DATA_WAREHOUSING Pipeline Alerts ===================
+  - name: data_warehousing_alerts
+    rules:
+      - alert: DataWarehouseETLFailureRateHigh
+        expr: increase(data_warehousing_etl_failures_total[5m]) > 10
+        for: 5m
         labels:
           severity: critical
         annotations:
-          summary: "PostgreSQL is down"
-          description: "PostgreSQL database is not responding"
+          summary: "Data warehouse ETL failure rate is high ({{ $value }} failures)"
+          description: "Data warehouse ETL has {{ printf \"%.0f\" $value }} failures in last 5 minutes"
 
-      # Redis down
-      - alert: RedisDown
-        expr: redis_up == 0
-        for: 1m
+      - alert: DataWarehouseLoadLatencyHigh
+        expr: data_warehousing_load_latency_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data warehouse load latency is high ({{ $value }}s)"
+          description: "Data warehouse ETL load took {{ printf \"%.0f\" $value }} seconds"
+
+      - alert: DataWarehouseStorageQuotaWarning
+        expr: data_warehouse_storage_used_bytes / data_warehouse_storage_total_bytes * 100 > 85
+        for: 2h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data warehouse storage is at {{ printf \"%.0f\" $value }}%"
+          description: "Data warehouse storage is approaching quota limit"
+
+      - alert: DataWarehouseSchemaDriftDetected
+        expr: data_warehouse_schema_drift_detected > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data warehouse schema drift detected ({{ $value }} columns changed)"
+          description: "Data warehouse has detected schema changes in {{ printf \"%.0f\" $value }} columns"
+
+  # =================== ML_TRAINING Pipeline Alerts ===================
+  - name: ml_training_alerts
+    rules:
+      - alert: MLLossStagnation
+        expr: increase(ml_loss_over_time[1h]) < 0.001
+        for: 2h
+        labels:
+          severity: warning
+        annotations:
+          summary: "ML model loss has stagnated ({{ $value }} over last hour)"
+          description: "Model loss has not decreased significantly in the last hour"
+
+      - alert: MLTrainingGPUTemperatureHigh
+        expr: ml_training_gpu_temperature_c > 80
+        for: 5m
         labels:
           severity: critical
         annotations:
-          summary: "Redis is down"
-          description: "Redis cache is not responding"
+          summary: "ML training GPU temperature is high ({{ $value }}°C)"
+          description: "GPU temperature has exceeded safe operating range"
+
+      - alert: MLTrainingGPULoadHigh
+        expr: ml_training_gpu_utilization_percent > 95
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ML training GPU utilization is very high ({{ $value }}%)"
+          description: "GPU is at {{ printf \"%.0f\" $value }}% utilization, may need more GPUs"
+
+      - alert: MLTrainingCheckpointMissing
+        expr: ml_training_checkpoint_missing_total > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ML training checkpoint is missing ({{ $value }} checkpoints)"
+          description: "Required training checkpoints are missing, may cause model corruption"
+
+      - alert: MLTrainingMetricsDiverging
+        expr: increase(ml_training_accuracy[1h]) < 0.5 or increase(ml_training_loss[1h]) > 0.5
+        for: 2h
+        labels:
+          severity: warning
+        annotations:
+          summary: "ML training metrics are diverging (delta: {{ printf \"%.2f\" $value }})"
+          description: "Model may be diverging - accuracy stagnant or loss increasing"
+
+  # =================== ORCHESTRATION Pipeline Alerts ===================
+  - name: orchestration_alerts
+    rules:
+      - alert: OrchestrationPipelineDelayed
+        expr: orchestration_pipeline_delay_seconds > 300
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Orchestration pipeline is delayed ({{ $value }}s)"
+          description: "Pipeline scheduled to run {{ $value }} seconds ago but hasn't started"
+
+      - alert: OrchestrationWorkerDown
+        expr: orchestration_active_workers < 2
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Orchestration workers are down ({{ $value }} active)"
+          description: "Not enough orchestration workers running to handle pipeline load"
+
+      - alert: OrchestrationDAGRunFailed
+        expr: increase(orchestration_dag_run_failures_total[5m]) > 10
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Orchestration DAG runs failing ({{ $value }} failures in 5m)"
+          description: "Multiple DAG runs have failed recently"
+
+      - alert: OrchestrationQueueBacklogHigh
+        expr: orchestration_pending_runs > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Orchestration queue backlog is high ({{ $value }} pending runs)"
+          description: "Pipeline orchestration has {{ printf \"%.0f\" $value }} runs waiting in queue"
+
+  # =================== SPARK Pipeline Alerts ===================
+  - name: spark_alerts
+    rules:
+      - alert: SparkExecutorOOM
+        expr: increase(spark_executor_oom_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Spark executor experienced OOM ({{ $value }} executors)"
+          description: "Spark executor ran out of memory and was killed"
+
+      - alert: SparkApplicationFailed
+        expr: increase(spark_application_failures_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Spark application failed ({{ $value }} failures)"
+          description: "Spark application encountered fatal error and terminated"
+
+      - alert: SparkJobLongRunning
+        expr: spark_job_runtime_seconds > 3600
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Spark job has been running long ({{ $value }}s)"
+          description: "Spark job has exceeded expected runtime threshold"
+
+      - alert: SparkExecutorChurnHigh
+        expr: rate(spark_executor_lifecycle[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High executor churn detected ({{ $value }} execors/l5m)"
+          description: "Executors are being created and destroyed rapidly, may indicate memory issues"
+
+      - alert: SparkMemoryPressureHigh
+        expr: spark_memory_pressure_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Spark memory pressure is high ({{ $value }}%)"
+          description: "Spark is experiencing significant memory pressure"
