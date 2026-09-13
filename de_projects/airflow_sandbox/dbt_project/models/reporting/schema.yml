@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: rpt_icu_sepsis_risk_surveillance
+    description: "Clinical surveillance scoring imminent septic shock and hemodynamic instability."
+    tags: ["tier_1", "executive", "sepsis", "p0"]
+    columns:
+      - name: patient_id
+        tests:
+          - not_null
+      - name: sepsis_clinical_tier
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['IMMINENT_SEPTIC_SHOCK', 'MODERATE_SEPSIS_RISK', 'STABLE']
+
+  - name: rpt_adverse_drug_events
+    description: "Surveillance of critical high dosage administration and abnormal clinical lab markers."
+    tags: ["executive", "tier_1"]
+
+  - name: rpt_hospital_bed_capacity
+    description: "Inpatient admission volumes and bed capacity aggregates across hospital departments."
+    tags: ["operations"]
+
+  - name: rpt_cmo_executive_quality_kpis
+    description: "Executive scorecard aggregating active septic shock alerts, adverse drug incidents, and hospital census."
+    tags: ["executive", "board", "tier_1"]
+    columns:
+      - name: report_date
+        tests:
+          - not_null

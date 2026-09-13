@@ -1,0 +1,27 @@
+name: "clinical_ops_dbt"
+version: "1.0.0"
+config-version: 2
+
+profile: "clinical_postgres"
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  clinical_ops_dbt:
+    staging:
+      +schema: staging
+      +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: view
+    marts:
+      +schema: marts
+      +materialized: table
+    reporting:
+      +schema: reporting
+      +materialized: table
+      +tags: ["executive", "tier_1", "regulatory"]

@@ -1,0 +1,52 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: patient_vitals
+      - name: clinical_encounters
+      - name: medication_orders
+      - name: lab_results
+
+models:
+  - name: stg_patient_vitals
+    description: "Standardized extraction of ICU and ward bedside patient vital telemetry."
+    columns:
+      - name: telemetry_id
+        tests:
+          - unique
+          - not_null
+      - name: patient_id
+        tests:
+          - not_null
+
+  - name: stg_clinical_encounters
+    description: "Inpatient and emergency hospital admissions and encounters."
+    columns:
+      - name: encounter_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_medication_orders
+    description: "Medication prescriptions, dispensing, and administration records."
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_lab_results
+    description: "Laboratory diagnostic chemistry and hematology tests."
+    columns:
+      - name: lab_id
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_icu_stays
+    description: "Filtered ICU admission cohort with entry and discharge timestamps."
+
+  - name: stg_bed_census
+    description: "Current snapshot of occupied hospital beds across clinical departments."

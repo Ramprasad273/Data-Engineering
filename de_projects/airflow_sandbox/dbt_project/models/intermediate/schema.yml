@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: int_vitals_hourly_aggregated
+    description: "Hourly rollups of patient hemodynamic telemetry with min/max bounds."
+
+  - name: int_abnormal_lab_events
+    description: "Aggregation of critical and abnormal laboratory events per patient."
+
+  - name: int_medication_active_cycles
+    description: "Active medication counts and cumulative dosage cycles per patient encounter."
+
+  - name: int_icu_stay_timeline
+    description: "Calculated duration of ICU stay hours per patient encounter."

@@ -1,0 +1,49 @@
+version: 2
+
+exposures:
+  - name: sepsis_early_warning_alert_engine
+    label: "ICU Sepsis Real-time Alerting Engine"
+    type: ml
+    maturity: high
+    owner:
+      name: "Dr. Sarah Chen, Chief of Critical Care"
+      email: "schen@hospital.org"
+    description: "Reverse ETL sub-second feed scoring hemodynamics to trigger bedside ICU nurse paging."
+    depends_on:
+      - ref('rpt_icu_sepsis_risk_surveillance')
+
+  - name: cmo_executive_ops_dashboard
+    label: "Chief Medical Officer Hospital Operations"
+    type: dashboard
+    maturity: high
+    owner:
+      name: "Office of the CMO & Board of Directors"
+      email: "cmo-analytics@hospital.org"
+    description: "Executive Grafana dashboard (Port 3001) providing real-time executive surveillance over sepsis incidence, adverse drug events, and hospital-wide acute bed bottlenecks."
+    url: "http://localhost:3001/d/cmo-exec-ops/cmo-executive-hospital-operations"
+    depends_on:
+      - ref('rpt_cmo_executive_quality_kpis')
+      - ref('rpt_icu_sepsis_risk_surveillance')
+      - ref('rpt_hospital_bed_capacity')
+
+  - name: pharmacy_safety_monitor
+    label: "Pharmacy Adverse Drug Event Surveillance"
+    type: application
+    maturity: medium
+    owner:
+      name: "Director of Clinical Pharmacy"
+      email: "pharmacy-lead@hospital.org"
+    description: "Clinical surveillance web app detecting toxic dosing and drug interactions."
+    depends_on:
+      - ref('rpt_adverse_drug_events')
+
+  - name: emergency_triage_feed
+    label: "Emergency Department Triage Wallboard"
+    type: dashboard
+    maturity: medium
+    owner:
+      name: "Emergency Operations Director"
+      email: "er-ops@hospital.org"
+    description: "Live wallboard showing available beds, pending admissions, and capacity limits."
+    depends_on:
+      - ref('rpt_hospital_bed_capacity')
