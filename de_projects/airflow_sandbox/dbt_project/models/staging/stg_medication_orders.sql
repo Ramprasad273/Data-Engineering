@@ -1,4 +1,4 @@
-{{ config(materialized=''view'') }}
+{{ config(materialized='view') }}
 
 SELECT
     order_id,
@@ -9,4 +9,4 @@ SELECT
     status AS order_status,
     ordered_at
 FROM raw.medication_orders
-WHERE status NOT IN (''cancelled'', ''entered_in_error'')
+WHERE status NOT IN ('cancelled', 'entered_in_error')
