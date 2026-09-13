@@ -1,0 +1,8 @@
+# Experiment blueprints and local notes
+E2E_TEST_EXPERIMENT_BLUEPRINT.md
+
+# Local test & audit reports
+*.html
+
+# Airflow run logs
+logs/
