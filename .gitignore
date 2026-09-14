@@ -120,3 +120,6 @@ dmypy.json
 
 # Airflow logs
 de_projects/de_sandbox/docker/airflow/logs/
+
+staff_eng_plan/
+skills/
