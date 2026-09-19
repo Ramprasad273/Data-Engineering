@@ -141,3 +141,8 @@ manifest_diff.json
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Study plans and local notes
+[Ss]taff_eng_plan/
+staff_eng_plan/
+Staff_eng_plan/

@@ -83,14 +83,6 @@ python kafka_producer.py
 
 Detailed documentation: [de_projects/kafka_projects/Kafka_101/README.md](./de_projects/kafka_projects/Kafka_101/README.md)
 
-### 3. Staff Data Engineer Study Plan
-
-Curriculum and study blueprints covering distributed systems theory (CAP theorem, consensus, replication lag), storage formats (Parquet encoding, predicate pushdown, Iceberg metadata), compute engines (Spark Catalyst, memory tuning), and large-scale data system design.
-
-- [30-Day Study Plan](./Staff_eng_plan/staff_de_30_day_war_plan.md)
-- [Day 1: Replication and Parquet Internals](./Staff_eng_plan/day_1_replication_and_parquet.md)
-- [Day 2: Partitioning and Parquet Optimization](./Staff_eng_plan/day_2_partitioning_and_parquet.md)
-
 ## Technology Stack
 
 - **Workflow Orchestration**: Apache Airflow
