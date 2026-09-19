@@ -1,0 +1,37 @@
+﻿name: "dbt Blast Radius CI"
+
+on:
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  parallax_gate:
+    name: "Parallax Blast Radius Gate"
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dbt & Compile
+        run: |
+          pip install dbt-core dbt-postgres
+          cd de_projects/airflow_sandbox/dbt_project
+          dbt compile
+
+      - name: Run Parallax Blast Radius CI
+        uses: Ramprasad273/parallax@main
+        with:
+          manifest: "de_projects/airflow_sandbox/dbt_project/target/manifest.json"
+          fail_on: "HIGH"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
