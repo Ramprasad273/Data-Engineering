@@ -1,0 +1,29 @@
+name: "dbt Blast Radius CI"
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  parallax_check:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dbt & Compile
+        run: |
+          pip install dbt-core dbt-postgres
+          cd dbt_project
+          dbt compile
+      - name: Run Parallax Blast Radius CI
+        uses: Ramprasad273/parallax@main
+        with:
+          manifest: "dbt_project/target/manifest.json"
+          fail_on: "HIGH"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
