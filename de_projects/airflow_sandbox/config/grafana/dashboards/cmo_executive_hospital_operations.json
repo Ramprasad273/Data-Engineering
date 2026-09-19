@@ -30,7 +30,7 @@
         "y": 0
       },
       "id": 100,
-      "title": "🏥 Executive Summary & Critical Clinical Alerts",
+      "title": "Executive Summary & Critical Clinical Alerts",
       "type": "row"
     },
     {
@@ -100,7 +100,7 @@
           "refId": "A"
         }
       ],
-      "title": "🚨 Imminent Septic Shock Alerts",
+      "title": "Imminent Septic Shock Alerts",
       "description": "Patients currently experiencing acute septic shock (SBP < 90 mmHg & HR > 110 bpm)",
       "type": "stat"
     },
@@ -171,7 +171,7 @@
           "refId": "A"
         }
       ],
-      "title": "💊 Adverse Drug Incidents (ADE)",
+      "title": "Adverse Drug Incidents (ADE)",
       "description": "High dosage pharmaceutical toxicity risks flagged across active inpatient stays",
       "type": "stat"
     },
@@ -235,7 +235,7 @@
           "refId": "A"
         }
       ],
-      "title": "🛌 Aggregate Inpatient Census",
+      "title": "Aggregate Inpatient Census",
       "description": "Total hospitalized acute care patient volume across all departments",
       "type": "stat"
     },
@@ -307,7 +307,7 @@
           "refId": "A"
         }
       ],
-      "title": "⚠️ ICU Sepsis Crisis Escalation",
+      "title": "ICU Sepsis Crisis Escalation",
       "description": "Real-time gauge of patients meeting septic shock criteria",
       "type": "gauge"
     },
@@ -320,7 +320,7 @@
         "y": 7
       },
       "id": 101,
-      "title": "📊 Hospital Capacity & Sepsis Severity Triage",
+      "title": "Hospital Capacity & Sepsis Severity Triage",
       "type": "row"
     },
     {
@@ -382,7 +382,7 @@
           "refId": "A"
         }
       ],
-      "title": "🏢 Inpatient Admissions & Bed Allocation by Unit",
+      "title": "Inpatient Admissions & Bed Allocation by Unit",
       "description": "Patient volume distribution across ICU, Emergency, Cardiac Surgery, and Oncology",
       "type": "bargauge"
     },
@@ -461,7 +461,7 @@
         "y": 16
       },
       "id": 102,
-      "title": "📋 High-Acuity Patient Feeds & Surveillance Registers",
+      "title": "High-Acuity Patient Feeds & Surveillance Registers",
       "type": "row"
     },
     {
@@ -628,7 +628,7 @@
           "refId": "A"
         }
       ],
-      "title": "⚠️ Pharmacy Safety & High Dosage Surveillance",
+      "title": "Pharmacy Safety & High Dosage Surveillance",
       "description": "Patients with cumulative pharmaceutical dosages > 1,000 mg and active abnormal diagnostic labs",
       "type": "table"
     }

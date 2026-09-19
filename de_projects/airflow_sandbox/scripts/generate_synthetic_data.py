@@ -170,7 +170,7 @@ def main() -> None:
                         help="Select clinical source domain to generate")
     args = parser.parse_args()
 
-    print(f"🏥 Connecting to Clinical Data Warehouse (target: {args.source})...")
+    print(f"[INFO] Connecting to Clinical Data Warehouse (target: {args.source})...")
     conn = get_connection()
     conn.autocommit = False
     cur = conn.cursor()
@@ -204,7 +204,7 @@ def main() -> None:
     conn.commit()
     cur.close()
     conn.close()
-    print(f"✅ Seeding complete for domain: {args.source}")
+    print(f"[SUCCESS] Seeding complete for domain: {args.source}")
 
 if __name__ == "__main__":
     main()

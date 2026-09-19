@@ -2,11 +2,11 @@ version: '3.8'
 
 # x-airflow-common block - Common configuration for Airflow services
 x-airflow-common: &x-airflow-common
-  image: ${AIRFLOW_IMAGE:-apache/airflow:2.9.0}
+  image: ${AIRFLOW_IMAGE:-apache/airflow:2.9.3}
   environment:
     PATH: /home/airflow/.local/bin:/usr/local/bin:/usr/bin:/bin
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-airflow}:${POSTGRES_PASSWORD:-airflow}@airflow-db/${POSTGRES_DB:-airflow}
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     _PIP_ADDITIONAL_REQUIREMENTS: "dbt-postgres psycopg2-binary"
   volumes:
@@ -79,13 +79,13 @@ services:
     container_name: metrics_airflow_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: ${POSTGRES_USER:-airflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow}
+      POSTGRES_DB: ${POSTGRES_DB:-airflow}
     volumes:
       - airflow_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U airflow -d airflow']
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER:-airflow} -d $${POSTGRES_DB:-airflow}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -102,7 +102,7 @@ services:
     command: >
       -c "mkdir -p /opt/airflow/dags /opt/airflow/logs /opt/airflow/plugins &&
           airflow db migrate &&
-          airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true"
+          airflow users create --username ${_AIRFLOW_WWW_USER_USERNAME:-admin} --password ${_AIRFLOW_WWW_USER_PASSWORD:-admin} --firstname ${_AIRFLOW_WWW_USER_FIRSTNAME:-Admin} --lastname ${_AIRFLOW_WWW_USER_LASTNAME:-User} --role Admin --email ${_AIRFLOW_WWW_USER_EMAIL:-admin@example.com} || true"
     networks:
       - airflow_network
 
@@ -122,7 +122,7 @@ services:
     command: webserver
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-airflow}:${POSTGRES_PASSWORD:-airflow}@airflow-db/${POSTGRES_DB:-airflow}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__WEBSERVER__EXPOSE_UI: "true"
       _PIP_ADDITIONAL_REQUIREMENTS: "dbt-postgres psycopg2-binary"
@@ -149,7 +149,7 @@ services:
     command: scheduler
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db/airflow
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-airflow}:${POSTGRES_PASSWORD:-airflow}@airflow-db/${POSTGRES_DB:-airflow}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__KERBEROS__ENABLED: "false"
       _PIP_ADDITIONAL_REQUIREMENTS: "dbt-postgres psycopg2-binary"
@@ -222,8 +222,8 @@ services:
     container_name: metrics_grafana_server
     image: grafana/grafana:10.4.2
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD:-admin}
     volumes:
       - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./config/grafana/dashboards:/etc/grafana/dashboards:ro
@@ -240,9 +240,9 @@ services:
     container_name: clinical_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: healthcare_dwh
-      POSTGRES_USER: clinical_admin
-      POSTGRES_PASSWORD: clinical_secure_password
+      POSTGRES_DB: ${CLINICAL_DB_NAME:-healthcare_dwh}
+      POSTGRES_USER: ${CLINICAL_DB_USER:-clinical_admin}
+      POSTGRES_PASSWORD: ${CLINICAL_DB_PASSWORD:-clinical_secure_password}
     ports:
       - "${CLINICAL_DB_PORT:-5433}:5432"
     volumes:
@@ -250,13 +250,13 @@ services:
     networks:
       - airflow_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U clinical_admin -d healthcare_dwh"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-clinical_admin} -d $${POSTGRES_DB:-healthcare_dwh}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   clinical-init:
-    image: ${AIRFLOW_IMAGE:-apache/airflow:2.9.0}
+    image: ${AIRFLOW_IMAGE:-apache/airflow:2.9.3}
     container_name: clinical_init_setup
     depends_on:
       clinical-postgres:
@@ -264,9 +264,9 @@ services:
     environment:
       DB_HOST: clinical-postgres
       DB_PORT: "5432"
-      DB_NAME: healthcare_dwh
-      DB_USER: clinical_admin
-      DB_PASSWORD: clinical_secure_password
+      DB_NAME: ${CLINICAL_DB_NAME:-healthcare_dwh}
+      DB_USER: ${CLINICAL_DB_USER:-clinical_admin}
+      DB_PASSWORD: ${CLINICAL_DB_PASSWORD:-clinical_secure_password}
     volumes:
       - ./scripts:/opt/airflow/scripts
       - ./dbt_project:/opt/airflow/dbt_project

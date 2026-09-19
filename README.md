@@ -1,347 +1,119 @@
 # Data Engineering Projects
 
-<div align="center">
+Production-grade data engineering repository demonstrating distributed systems, workflow orchestration, event streaming, dimensional data warehouse modeling, and platform observability.
 
-![Data Engineering](https://img.shields.io/badge/Data-Engineering-blue?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Apache Airflow](https://img.shields.io/badge/Apache-Airflow-017CEE?style=for-the-badge&logo=apache-airflow&logoColor=white)
-![Apache Spark](https://img.shields.io/badge/Apache-Spark-E25A1C?style=for-the-badge&logo=apache-spark&logoColor=white)
-![Apache Kafka](https://img.shields.io/badge/Apache-Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white)
+## Architecture
 
-**A collection of production-ready data engineering projects demonstrating modern data infrastructure, orchestration, and streaming technologies.**
-
-[Projects](#projects) • [Architecture](#architecture) • [Quick Start](#quick-start) • [Security](#security) • [Contributing](#contributing)
-
-</div>
-
----
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Projects](#projects)
-- [Technology Stack](#technology-stack)
-- [Quick Start](#quick-start)
-- [Security Best Practices](#security-best-practices)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
-## 🎯 Overview
-
-This repository contains hands-on data engineering projects designed to demonstrate real-world implementations of:
-
-- **Data Orchestration** with Apache Airflow
-- **Distributed Processing** with Apache Spark
-- **Stream Processing** with Apache Kafka
-- **Infrastructure as Code** with Docker Compose
-- **Observability** with Prometheus, Grafana, and Loki
-- **Production-Ready Patterns** for data pipelines
-
-Each project is self-contained, fully documented, and ready to run locally with minimal setup.
-
----
-
-## 🏗️ Architecture
+The repository provides modular, reproducible environments demonstrating end-to-end data pipelines from ingestion to analytics and executive visualization.
 
 ### Repository Structure
 
-![Data Engineering Repository Architecture](./docs/images/repository_architecture.png)
+```text
+Data-Engineering/
+├── .github/workflows/          # CI/CD workflows (dbt validation, Parallax CI)
+├── de_projects/
+│   ├── airflow_sandbox/        # End-to-end orchestration, Spark compute & observability
+│   │   ├── config/             # Prometheus, Grafana dashboards, Loki & Promtail configs
+│   │   ├── dags/               # 9 production Airflow DAGs (telemetry, ADT, reporting, audit)
+│   │   ├── dbt_project/        # 18 models across Staging, Intermediate, Marts, Reporting
+│   │   ├── scripts/            # Synthetic data generation and verification scripts
+│   │   └── docker-compose.yaml # Multi-container stack definition
+│   └── kafka_projects/
+│       └── Kafka_101/          # Python Kafka producer and consumer with key-partitioning
+├── docs/images/                # Architectural diagrams
+├── Staff_eng_plan/             # Staff Data Engineer 30-day curriculum and study blueprints
+├── skills/                     # Engineering behavioral guidelines
+├── README.md                   # Repository documentation
+└── SECURITY.md                 # Security architecture and deployment policy
+```
 
-The repository is organized into three main pillars:
-- **Orchestration & Processing**: Airflow, Spark, and monitoring tools
-- **Streaming Data**: Kafka-based streaming projects
-- **Infrastructure**: Docker, configuration, and environment management
+### System Architecture & Data Flow
 
-### Technology Integration
+![Repository Architecture](./docs/images/repository_architecture.png)
 
 ![Data Flow Architecture](./docs/images/data_flow_architecture.png)
 
-The architecture demonstrates end-to-end data flow:
-- **Data Sources**: APIs, databases, files, and streams
-- **Batch Processing**: Airflow orchestrates Spark jobs
-- **Stream Processing**: Kafka handles real-time data
-- **Central Engine**: Spark processes both batch and streaming data
-- **Monitoring**: Prometheus, Grafana, and Loki provide observability
+1. **Ingestion & Streaming**: Raw telemetry and transactional events ingested via autonomous streaming tasks and Kafka event brokers.
+2. **Orchestration**: Apache Airflow schedules time-based feeds, triggers cascading transformations, and monitors dependencies via non-blocking sensors.
+3. **Compute & Transformation**: Distributed Spark workers execute batch jobs while dbt-postgres materializes conformed dimensions, star-schema facts, and executive KPI marts.
+4. **Observability**: Prometheus captures container and Airflow metrics, Loki aggregates system logs, and Grafana serves pre-configured operational dashboards.
 
----
+## Projects
 
-## 📁 Projects
+### 1. Airflow Sandbox & Clinical Data Platform
 
-### 1. Airflow Sandbox with Spark & Monitoring
+A complete healthcare informatics platform running a multi-DAG pipeline and dimensional warehouse for ICU patient operations.
 
-A **production-grade** data orchestration environment featuring Apache Airflow, Spark, and a complete observability stack.
+- **Orchestration**: Apache Airflow 2.9.3 (LocalExecutor).
+- **Compute**: Apache Spark 3.5.0 cluster (Master and Worker).
+- **Warehouse**: PostgreSQL 16 (`healthcare_dwh`) with 18 dbt models spanning 5 lineage tiers.
+- **Monitoring**: Prometheus 2.50.1, Grafana 10.4.2, Loki 2.9.4, Promtail 2.9.4, StatsD exporter.
 
-**Status:** ✅ Production Ready
-
-**Features:**
-- 🔄 Apache Airflow 2.9.3 with CeleryExecutor
-- ⚡ Apache Spark 3.5.0 cluster (master + worker)
-- 📊 Full monitoring stack (Prometheus, Grafana, Loki)
-- 🐳 Docker Compose orchestration
-- 📈 Pre-built Grafana dashboards
-- 🔔 Alerting rules configured
-- 🔒 Security best practices
-
-**Technologies:**
-- Apache Airflow
-- Apache Spark (PySpark)
-- PostgreSQL (metadata)
-- Redis (message broker)
-- Prometheus (metrics)
-- Grafana (visualization)
-- Loki (log aggregation)
-- cAdvisor (container metrics)
-
-**Quick Start:**
+#### Quickstart
 ```bash
 cd de_projects/airflow_sandbox
+cp .env.example .env
 docker-compose up -d
 ```
 
-**Access:**
-- Airflow UI: http://localhost:8080
-- Grafana: http://localhost:3000
-- Prometheus: http://localhost:9090
-- Spark Master: http://localhost:8081
+#### Service Endpoints
+- Airflow UI: [http://localhost:8080](http://localhost:8080) (Credentials: `admin` / `admin`)
+- Grafana: [http://localhost:3001](http://localhost:3001) (Credentials: `admin` / `admin`)
+- Prometheus: [http://localhost:9090](http://localhost:9090)
+- Spark Master UI: [http://localhost:8081](http://localhost:8081)
+- Clinical Warehouse: `localhost:5433` (`healthcare_dwh`, user: `clinical_admin`)
 
-📖 **[Full Documentation →](./de_projects/airflow_sandbox/README.md)**
+Detailed documentation: [de_projects/airflow_sandbox/README.md](./de_projects/airflow_sandbox/README.md)
 
----
+### 2. Kafka 101: Stream Processing
 
-### 2. Kafka 101: Producer and Consumer
+A foundational implementation demonstrating Apache Kafka message publishing, key-based partitioning, and consumer group offset management in Python.
 
-A foundational introduction to Apache Kafka demonstrating core concepts of stream processing.
+- **Components**: Producer (`kafka_producer.py`), Consumer (`kafka_consumer.py`), Configuration (`kafka_configurations.py`).
+- **Features**: Round-robin and key-hashed partitioning, UTF-8 JSON serialization, configurable broker discovery.
 
-**Status:** ✅ Complete
-
-**Features:**
-- 📨 Simple producer implementation
-- 📬 Consumer with offset management
-- 🔄 Message serialization/deserialization
-- 🐍 Python-based examples
-
-**Technologies:**
-- Apache Kafka
-- Python 3.x
-- kafka-python library
-
-**Quick Start:**
+#### Quickstart
 ```bash
-cd de_projects/Kakfa_projects/Kafka_101
-# Follow project README for setup
+cd de_projects/kafka_projects/Kafka_101
+python kafka_consumer.py
+python kafka_producer.py
 ```
 
-📖 **[Full Documentation →](./de_projects/Kakfa_projects/Kafka_101/Readme.md)**
+Detailed documentation: [de_projects/kafka_projects/Kafka_101/README.md](./de_projects/kafka_projects/Kafka_101/README.md)
 
----
+### 3. Staff Data Engineer Study Plan
 
-## 🛠️ Technology Stack
+Curriculum and study blueprints covering distributed systems theory (CAP theorem, consensus, replication lag), storage formats (Parquet encoding, predicate pushdown, Iceberg metadata), compute engines (Spark Catalyst, memory tuning), and large-scale data system design.
 
-### Orchestration & Workflow
-- **Apache Airflow** - Workflow orchestration and scheduling
-- **Celery** - Distributed task execution
+- [30-Day Study Plan](./Staff_eng_plan/staff_de_30_day_war_plan.md)
+- [Day 1: Replication and Parquet Internals](./Staff_eng_plan/day_1_replication_and_parquet.md)
+- [Day 2: Partitioning and Parquet Optimization](./Staff_eng_plan/day_2_partitioning_and_parquet.md)
 
-### Processing & Compute
-- **Apache Spark** - Distributed data processing
-- **PySpark** - Python API for Spark
+## Technology Stack
 
-### Streaming
-- **Apache Kafka** - Distributed event streaming
+- **Workflow Orchestration**: Apache Airflow
+- **Distributed Computing**: Apache Spark, PySpark
+- **Event Streaming**: Apache Kafka
+- **Data Modeling & Transformation**: dbt (Data Build Tool), SQL
+- **Database Systems**: PostgreSQL 16
+- **Observability**: Prometheus, Grafana, Loki, Promtail, StatsD
+- **Infrastructure**: Docker, Docker Compose
+- **Programming Languages**: Python 3.11, SQL, Bash
 
-### Data Storage
-- **PostgreSQL** - Relational database (Airflow metadata)
-- **Redis** - In-memory data store (message broker)
+## Security
 
-### Monitoring & Observability
-- **Prometheus** - Metrics collection and storage
-- **Grafana** - Visualization and dashboards
-- **Loki** - Log aggregation
-- **Promtail** - Log shipping
-- **cAdvisor** - Container metrics
+All projects include sensible local development defaults for ease of testing. When deploying in shared, staging, or production environments, refer to [SECURITY.md](./SECURITY.md) for credential management, network segmentation, and hardening procedures.
 
-### Infrastructure
-- **Docker** - Containerization
-- **Docker Compose** - Multi-container orchestration
+## Contributing
 
-### Languages
-- **Python 3.11** - Primary programming language
-- **SQL** - Data querying
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Docker** (20.10+)
-- **Docker Compose** (2.0+)
-- **Git**
-- **8GB RAM minimum** (16GB recommended)
-- **20GB free disk space**
-
-### Clone Repository
-
-```bash
-git clone https://github.com/Ramprasad273/Data-Engineering.git
-cd Data-Engineering
-```
-
-### Choose a Project
-
-Navigate to any project directory and follow its README:
-
-```bash
-# Airflow Sandbox
-cd de_projects/airflow_sandbox
-docker-compose up -d
-
-# Kafka 101
-cd de_projects/Kakfa_projects/Kafka_101
-# Follow project-specific instructions
-```
-
-### Verify Installation
-
-```bash
-# Check running containers
-docker-compose ps
-
-# View logs
-docker-compose logs -f
-```
-
----
-
-## 🔒 Security Best Practices
-
-> [!IMPORTANT]
-> **This repository contains development/sandbox environments with default credentials for ease of use. NEVER use these configurations in production.**
-
-### Development Environment
-
-The projects use default credentials for local development:
-- Airflow: Configured via environment variables
-- Grafana: Configured via environment variables
-- PostgreSQL: Configured via environment variables
-
-### Production Deployment
-
-For production deployments:
-
-1. **Use Environment Variables**
+1. Fork the repository and create a feature branch (`git checkout -b feature/improvement`).
+2. Adhere to code quality and minimal-change principles outlined in [skills/skills.md](./skills/skills.md).
+3. Ensure automated verification scripts pass:
    ```bash
-   # Create .env file (never commit this!)
-   cp .env.example .env
-   # Edit .env with secure credentials
+   python de_projects/airflow_sandbox/scripts/verify_experiment.py
    ```
+4. Submit a Pull Request with a clear explanation of changes and validation steps.
 
-2. **Change All Default Passwords**
-   - Use strong, unique passwords
-   - Use password managers
-   - Rotate credentials regularly
+## License
 
-3. **Enable Authentication & Authorization**
-   - Configure RBAC in Airflow
-   - Enable authentication in Grafana
-   - Secure all service endpoints
-
-4. **Use Secrets Management**
-   - HashiCorp Vault
-   - AWS Secrets Manager
-   - Azure Key Vault
-   - Kubernetes Secrets
-
-5. **Network Security**
-   - Use private networks
-   - Enable SSL/TLS
-   - Configure firewalls
-   - Implement VPNs
-
-6. **Monitoring Security**
-   - Secure Prometheus/Grafana
-   - Enable HTTPS
-   - Implement access controls
-   - Audit logs regularly
-
-📖 **[Full Security Guidelines →](./SECURITY.md)**
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Whether you want to:
-
-- 🐛 Report a bug
-- 💡 Suggest a new feature
-- 📝 Improve documentation
-- ➕ Add a new project
-- 🔧 Fix an issue
-
-### How to Contribute
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Make your changes**
-4. **Commit with clear messages**
-   ```bash
-   git commit -m "Add amazing feature"
-   ```
-5. **Push to your fork**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-6. **Open a Pull Request**
-
-### Contribution Guidelines
-
-- Follow existing code style
-- Add tests for new features
-- Update documentation
-- Ensure all tests pass
-- One feature per PR
-
----
-
-## 📊 Project Status
-
-| Project | Status | Version | Last Updated |
-|---------|--------|---------|--------------|
-| Airflow Sandbox | ✅ Production Ready | 2.0 | 2026-02-01 |
-| Kafka 101 | ✅ Complete | 1.0 | - |
-
----
-
-## 📝 License
-
-This project is open source and available for educational and commercial use.
-
----
-
-## 🏷️ Tags
-
-`data-engineering` `apache-airflow` `apache-spark` `apache-kafka` `docker` `docker-compose` `etl-pipeline` `data-orchestration` `distributed-computing` `stream-processing` `monitoring` `observability` `prometheus` `grafana` `loki` `python` `pyspark` `postgresql` `redis` `celery` `workflow-automation` `data-infrastructure` `devops` `mlops` `big-data`
-
----
-
-## 📞 Support
-
-- 📖 Check project-specific README files
-- 🐛 [Report Issues](https://github.com/Ramprasad273/Data-Engineering/issues)
-- 💬 [Discussions](https://github.com/Ramprasad273/Data-Engineering/discussions)
-
----
-
-<div align="center">
-
-**Built with ❤️ for the Data Engineering Community**
-
-⭐ Star this repo if you find it helpful!
-
-</div>
+This project is licensed under the terms described in individual subprojects and is available for educational and commercial development.

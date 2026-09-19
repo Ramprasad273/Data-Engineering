@@ -10,18 +10,23 @@ jobs:
       pull-requests: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.11"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
 
       - name: Install dbt & Parse Manifest
         working-directory: de_projects/airflow_sandbox/dbt_project
         run: |
-          pip install dbt-core dbt-postgres
+          uv pip install --system dbt-core dbt-postgres
           dbt parse --profiles-dir .
 
       - name: Run Parallax Blast Radius CI

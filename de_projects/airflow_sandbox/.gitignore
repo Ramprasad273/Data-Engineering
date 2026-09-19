@@ -1,8 +1,13 @@
-# Experiment blueprints and local notes
-E2E_TEST_EXPERIMENT_BLUEPRINT.md
-
-# Local test & audit reports
-*.html
-
-# Airflow run logs
+# Airflow run logs and cache
 logs/
+*.pid
+
+# dbt artifacts
+dbt_project/target/
+dbt_project/logs/
+dbt_project/.user.yml
+
+# Generated test and audit reports
+*.html
+pr_comment.md
+manifest_diff.json
