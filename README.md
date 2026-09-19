@@ -21,7 +21,6 @@ Data-Engineering/
 │   └── kafka_projects/
 │       └── Kafka_101/          # Python Kafka producer and consumer with key-partitioning
 ├── docs/images/                # Architectural diagrams
-├── Staff_eng_plan/             # Staff Data Engineer 30-day curriculum and study blueprints
 ├── skills/                     # Engineering behavioral guidelines
 ├── README.md                   # Repository documentation
 └── SECURITY.md                 # Security architecture and deployment policy
