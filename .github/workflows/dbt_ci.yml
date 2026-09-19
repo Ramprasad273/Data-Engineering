@@ -15,13 +15,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-
-      - name: Set up Python
-        run: uv python install 3.11
 
       - name: Install dbt & Parse Manifest
         working-directory: de_projects/airflow_sandbox/dbt_project
