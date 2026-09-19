@@ -24,6 +24,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+          cache-dependency-glob: "de_projects/airflow_sandbox/dbt_project/**"
 
       - name: Install dbt & Parse Manifest
         working-directory: de_projects/airflow_sandbox/dbt_project
