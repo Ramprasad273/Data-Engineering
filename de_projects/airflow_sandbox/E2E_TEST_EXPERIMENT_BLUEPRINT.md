@@ -228,15 +228,15 @@ services:
     image: postgres:16-alpine
     container_name: clinical_postgres
     environment:
-      POSTGRES_DB: healthcare_dwh
-      POSTGRES_USER: clinical_admin
-      POSTGRES_PASSWORD: clinical_secure_password
+      POSTGRES_DB: ${CLINICAL_DB_NAME:-healthcare_dwh}
+      POSTGRES_USER: ${CLINICAL_DB_USER:-clinical_admin}
+      POSTGRES_PASSWORD: ${CLINICAL_DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U clinical_admin -d healthcare_dwh"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-clinical_admin} -d $${POSTGRES_DB:-healthcare_dwh}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -248,7 +248,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://clinical_admin:clinical_secure_password@postgres:5432/healthcare_dwh
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${CLINICAL_DB_USER:-clinical_admin}:${CLINICAL_DB_PASSWORD}@postgres:5432/${CLINICAL_DB_NAME:-healthcare_dwh}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__WEBSERVER__SECRET_KEY: "super_secret_clinical_key_for_testing"
@@ -281,7 +281,7 @@ import random
 from datetime import datetime, timedelta
 import psycopg2
 
-CONN_STR = "postgresql://clinical_admin:clinical_secure_password@localhost:5432/healthcare_dwh"
+CONN_STR = f"postgresql://{os.getenv('DB_USER', 'clinical_admin')}:{os.getenv('DB_PASSWORD', '')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'healthcare_dwh')}"
 
 def main() -> None:
     conn = psycopg2.connect(CONN_STR)
@@ -447,8 +447,8 @@ clinical_postgres:
     dev:
       type: postgres
       host: localhost
-      user: clinical_admin
-      password: clinical_secure_password
+      user: "{{ env_var('DB_USER', 'clinical_admin') }}"
+      password: "{{ env_var('DB_PASSWORD') }}"
       port: 5432
       dbname: healthcare_dwh
       schema: public
@@ -803,9 +803,9 @@ datasources:
     type: postgres
     access: proxy
     url: clinical-postgres:5432
-    user: clinical_admin
+    user: ${CLINICAL_DB_USER:-clinical_admin}
     secureJsonData:
-      password: clinical_secure_password
+      password: ${CLINICAL_DB_PASSWORD}
     jsonData:
       database: healthcare_dwh
       sslmode: disable

@@ -26,14 +26,16 @@ This document outlines security configurations, risks, and hardening requirement
 
 ## Credential Management
 
-### Repository Default Credentials (Development Only)
+### Authentication Environment Variables
 
-| Service | Default Username | Default Password | Environment Variable |
-|---------|------------------|------------------|----------------------|
-| Airflow Webserver | `admin` | `admin` | `_AIRFLOW_WWW_USER_PASSWORD` |
-| Grafana Server | `admin` | `admin` | `GF_SECURITY_ADMIN_PASSWORD` |
-| Airflow Metadata DB | `airflow` | `airflow` | `POSTGRES_PASSWORD` |
-| Clinical Data Warehouse | `clinical_admin` | `clinical_secure_password` | `CLINICAL_DB_PASSWORD` |
+Authentication parameters are driven dynamically through environment variables and must never be committed to version control:
+
+| Service | Username Variable | Password Variable | Scope |
+|---------|-------------------|-------------------|-------|
+| Airflow Webserver | `_AIRFLOW_WWW_USER_USERNAME` | `_AIRFLOW_WWW_USER_PASSWORD` | Airflow Web UI & API |
+| Grafana Server | `GF_SECURITY_ADMIN_USER` | `GF_SECURITY_ADMIN_PASSWORD` | Grafana Admin Access |
+| Airflow Metadata DB | `POSTGRES_USER` | `POSTGRES_PASSWORD` | Airflow Internal Metadata |
+| Clinical Data Warehouse | `CLINICAL_DB_USER` | `CLINICAL_DB_PASSWORD` | Healthcare Data Warehouse |
 
 ### Overriding Credentials Locally
 

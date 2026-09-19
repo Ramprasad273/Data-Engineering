@@ -12,15 +12,15 @@ The platform simulates a high-acuity healthcare informatics environment (EHR & I
 
 ### Service Endpoints
 
-| Service | Container Name | Host Port | Internal Port | Default Credentials |
-|---------|----------------|-----------|---------------|---------------------|
-| Airflow Webserver | `metrics_airflow_webserver` | 8080 | 8080 | admin / admin |
-| Grafana Dashboard | `metrics_grafana_server` | 3001 | 3000 | admin / admin |
-| Prometheus | `metrics_prometheus` | 9090 | 9090 | (no auth) |
-| Spark Master UI | `metrics_spark_master` | 8081 | 8080 | (no auth) |
+| Service | Container Name | Host Port | Internal Port | Configuration Key |
+|---------|----------------|-----------|---------------|-------------------|
+| Airflow Webserver | `metrics_airflow_webserver` | 8080 | 8080 | `_AIRFLOW_WWW_USER_PASSWORD` |
+| Grafana Dashboard | `metrics_grafana_server` | 3001 | 3000 | `GF_SECURITY_ADMIN_PASSWORD` |
+| Prometheus | `metrics_prometheus` | 9090 | 9090 | (no auth required) |
+| Spark Master UI | `metrics_spark_master` | 8081 | 8080 | (no auth required) |
 | Spark Master RPC | `metrics_spark_master` | 7077 | 7077 | - |
-| Clinical PostgreSQL | `clinical_postgres` | 5433 | 5432 | clinical_admin / clinical_secure_password |
-| Airflow Metadata DB | `metrics_airflow_db` | - | 5432 | airflow / airflow |
+| Clinical PostgreSQL | `clinical_postgres` | 5433 | 5432 | `CLINICAL_DB_PASSWORD` |
+| Airflow Metadata DB | `metrics_airflow_db` | - | 5432 | `POSTGRES_PASSWORD` |
 | Loki | `metrics_loki` | 3100 | 3100 | - |
 | Node Exporter | `metrics_node_exporter` | 9100 | 9100 | - |
 | StatsD Exporter | `metrics_statsd_exporter` | 9102 | 9102 | - |
@@ -87,10 +87,12 @@ python scripts/verify_experiment.py
 ```
 
 ### 4. Access Platform UIs
-- Airflow UI: [http://localhost:8080](http://localhost:8080) (User: `admin`, Password: `admin` or `.env` value)
-- Grafana: [http://localhost:3001](http://localhost:3001) (User: `admin`, Password: `admin` or `.env` value)
+- Airflow UI: [http://localhost:8080](http://localhost:8080)
+- Grafana: [http://localhost:3001](http://localhost:3001)
 - Prometheus: [http://localhost:9090](http://localhost:9090)
 - Spark Master: [http://localhost:8081](http://localhost:8081)
+
+*Note: Access credentials are authenticated against the environment variables defined in your local `.env` configuration file.*
 
 ## Teardown
 To stop all containers and preserve volume data:

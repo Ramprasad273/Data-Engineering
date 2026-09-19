@@ -42,9 +42,9 @@ datasources:
     uid: healthcare_dwh_postgres
     access: proxy
     url: clinical-postgres:5432
-    user: clinical_admin
+    user: ${CLINICAL_DB_USER:-clinical_admin}
     secureJsonData:
-      password: clinical_secure_password
+      password: ${CLINICAL_DB_PASSWORD:-clinical_secure_password}
     jsonData:
       database: healthcare_dwh
       sslmode: disable

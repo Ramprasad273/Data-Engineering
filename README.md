@@ -57,11 +57,13 @@ docker-compose up -d
 ```
 
 #### Service Endpoints
-- Airflow UI: [http://localhost:8080](http://localhost:8080) (Credentials: `admin` / `admin`)
-- Grafana: [http://localhost:3001](http://localhost:3001) (Credentials: `admin` / `admin`)
+- Airflow UI: [http://localhost:8080](http://localhost:8080)
+- Grafana: [http://localhost:3001](http://localhost:3001)
 - Prometheus: [http://localhost:9090](http://localhost:9090)
 - Spark Master UI: [http://localhost:8081](http://localhost:8081)
-- Clinical Warehouse: `localhost:5433` (`healthcare_dwh`, user: `clinical_admin`)
+- Clinical Warehouse: `localhost:5433` (database: `healthcare_dwh`)
+
+*Credentials for Airflow, Grafana, and PostgreSQL are configured via your local `.env` file (see `.env.example`).*
 
 Detailed documentation: [de_projects/airflow_sandbox/README.md](./de_projects/airflow_sandbox/README.md)
 
