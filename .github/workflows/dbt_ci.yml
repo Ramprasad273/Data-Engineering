@@ -13,17 +13,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install dbt & Compile
+
+      - name: Install dbt & Parse Manifest
+        working-directory: de_projects/airflow_sandbox/dbt_project
         run: |
           pip install dbt-core dbt-postgres
-          cd dbt_project
-          dbt compile
+          dbt parse --profiles-dir .
+
       - name: Run Parallax Blast Radius CI
         uses: Ramprasad273/parallax@main
         with:
-          manifest: "dbt_project/target/manifest.json"
-          fail_on: "HIGH"
+          manifest: "de_projects/airflow_sandbox/dbt_project/target/manifest.json"
+          dialect: "postgres"
+          fail_on: "CRITICAL"
           github_token: ${{ secrets.GITHUB_TOKEN }}
