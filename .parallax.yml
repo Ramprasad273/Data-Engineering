@@ -1,0 +1,18 @@
+version: 1
+dialect: postgres
+manifest_path: dbt_project/target/manifest.json
+base_ref: main
+head_ref: HEAD
+fail_on: CRITICAL
+
+tier_tags:
+  - tier_1
+  - executive
+  - board
+  - sepsis
+  - p0
+  - regulatory
+
+ignore_patterns:
+  - "models/sandbox/**"
+  - "models/dev_*"
